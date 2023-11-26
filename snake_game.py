@@ -57,6 +57,9 @@ def gameRunning():
     x1_change = 0
     y1_change = 0
 
+    x2_change = 0
+    y2_change = 0
+
     snake_list_1 = []
     snake_list_2 = []
     Length_of_snake = 1
@@ -96,11 +99,29 @@ def gameRunning():
                 elif event.key == pygame.K_DOWN:
                     x1_change = 0
                     y1_change = snake_block_1
+                # KEYS for Snake 2
+                elif event.key == pygame.K_a:
+                    x2_change = -snake_block_2
+                    y2_change = 0
+                elif event.key == pygame.K_d:
+                    x2_change = snake_block_2
+                    y2_change = 0
+                elif event.key == pygame.K_w:
+                    x2_change = 0
+                    y2_change = -snake_block_2
+                elif event.key == pygame.K_s:
+                    x2_change = 0
+                    y2_change = snake_block_2
+                
         if x1 < 0 or x1 > 750 or y1 < 50 or y1 > 550:
+            game_close = True
+        if x2 < 0 or x2 > 750 or y2 < 50 or y2 > 550:
             game_close = True
 
         x1 += x1_change
         y1 += y1_change
+        x2 += x2_change
+        y2 += y2_change
         window.fill(white)
         # Handle additional input
         pygame.draw.rect(window, black, [foodx, foody, snake_block_1, snake_block_1])
