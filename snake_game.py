@@ -86,32 +86,33 @@ def gameRunning():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    x1_change = -snake_block_1
-                    y1_change = 0
-                elif event.key == pygame.K_RIGHT:
-                    x1_change = snake_block_1
-                    y1_change = 0
-                elif event.key == pygame.K_UP:
-                    x1_change = 0
-                    y1_change = -snake_block_1
-                elif event.key == pygame.K_DOWN:
-                    x1_change = 0
-                    y1_change = snake_block_1
+            keys = pygame.key.get_pressed()
+            # if event.type == pygame.KEYDOWN:
+            if keys[pygame.K_LEFT]:
+                x1_change = -snake_block_1
+                y1_change = 0
+            if keys[pygame.K_RIGHT]:
+                x1_change = snake_block_1
+                y1_change = 0
+            if keys[pygame.K_UP]:
+                x1_change = 0
+                y1_change = -snake_block_1
+            if keys[pygame.K_DOWN]:
+                x1_change = 0
+                y1_change = snake_block_1
                 # KEYS for Snake 2
-                elif event.key == pygame.K_a:
-                    x2_change = -snake_block_2
-                    y2_change = 0
-                elif event.key == pygame.K_d:
-                    x2_change = snake_block_2
-                    y2_change = 0
-                elif event.key == pygame.K_w:
-                    x2_change = 0
-                    y2_change = -snake_block_2
-                elif event.key == pygame.K_s:
-                    x2_change = 0
-                    y2_change = snake_block_2
+            if keys[pygame.K_a]:
+                x2_change = -snake_block_2
+                y2_change = 0
+            if keys[pygame.K_d]:
+                x2_change = snake_block_2
+                y2_change = 0
+            if keys[pygame.K_w]:
+                x2_change = 0
+                y2_change = -snake_block_2
+            if keys[pygame.K_s]:
+                x2_change = 0
+                y2_change = snake_block_2
                 
         if x1 < 0 or x1 > 750 or y1 < 50 or y1 > 550:
             game_close = True
