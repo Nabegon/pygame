@@ -21,16 +21,18 @@ window = pygame.display.set_mode((window_width, window_height))
 running = True
 
 snake_block_1 = 10
-snake_block_2 = 20
+snake_block_2 = 10
 clock = pygame.time.Clock()
 snake_speed = 5
 
 font_style = pygame.font.SysFont(None, 50)
 score_font = pygame.font.SysFont("comicasansms", 35)
 
-def score(score):
-    value = score_font.render("Score of player 1: " + str(score), True, red)
-    window.blit(value, [0,0])
+def score(score_1, score_2):
+    value_1 = score_font.render("Score of player 1: " + str(score_1), True, red)
+    value_2 = score_font.render("Score of player 2: " + str(score_2), True, blue)
+    window.blit(value_1, [0,0])
+    window.blit(value_2, [300,0])
 
 def snake_as_player_1(snake_block_1, snake_list_1):
     for x in snake_list_1:
@@ -62,7 +64,8 @@ def gameRunning():
 
     snake_list_1 = []
     snake_list_2 = []
-    Length_of_snake = 1
+    Length_of_snake1 = 1
+    Length_of_snake2 = 1
 
     foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
     foody = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
@@ -72,7 +75,7 @@ def gameRunning():
         while game_close == True:
             window.fill(white)
             message("You lost! Press Q-Quit or C-Play Again", red)
-            score(Length_of_snake - 1)
+            score(Length_of_snake1 - 1, Length_of_snake2 - 1)
             pygame.display.update()
 
             for event in pygame.event.get():
@@ -130,14 +133,14 @@ def gameRunning():
         snake_HEAD_1.append(x1)
         snake_HEAD_1.append(y1)
         snake_list_1.append(snake_HEAD_1)
-        if len(snake_list_1) > Length_of_snake:
+        if len(snake_list_1) > Length_of_snake1:
             del snake_list_1[0]
 
         snake_HEAD_2 = []
         snake_HEAD_2.append(x2)
         snake_HEAD_2.append(y2)
         snake_list_2.append(snake_HEAD_2)
-        if len(snake_list_2) > Length_of_snake:
+        if len(snake_list_2) > Length_of_snake2:
             del snake_list_2[0]
 
         for x in snake_list_1[:-1]:
@@ -147,7 +150,7 @@ def gameRunning():
         snake_as_player_1(snake_block_1, snake_list_1)        
         snake_as_player_2(snake_block_2, snake_list_2)
 
-        score(Length_of_snake - 1)
+        score(Length_of_snake1 - 1, Length_of_snake2 - 1)
         # pygame.draw.rect(window, black, [x1,y1,snake_block_1,snake_block_1])
         # pygame.draw.rect(window, blue, [x1,y1,snake_block_2,snake_block_2])
         pygame.display.update()
@@ -155,10 +158,16 @@ def gameRunning():
         if x1 == foodx and y1 == foody:
             foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
             foody = round(random.randrange(0, window_height - snake_block_1) / 10.0) * 10.0
-            Length_of_snake += 1
+            Length_of_snake1 += 1
+            print("Yummy!!")
+
+        if x2 == foodx and y2 == foody:
+            foodx = round(random.randrange(0, window_width - snake_block_2) / 10.0) * 10.0
+            foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
+            Length_of_snake2 += 1
             print("Yummy!!")
         # else:
-        #     if len(snake_list_1) > Length_of_snake:
+        #     if len(snake_list_1) > Length_of_snake1:
         #         del snake_list_1[0]
 
         clock.tick(snake_speed)
