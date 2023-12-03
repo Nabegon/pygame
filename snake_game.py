@@ -1,5 +1,3 @@
-classだから.だよ！
-
 import pygame
 import time
 import random
