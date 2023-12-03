@@ -13,15 +13,15 @@ white = (255,255,255)
 pygame.display.set_caption("Snake Game")
 
 # Set the window size
-window_width = 800
-window_height = 600
+window_width = 1920
+window_height = 1080
 window = pygame.display.set_mode((window_width, window_height))
 
 # Create a game loop
 running = True
 
-snake_block_1 = 10
-snake_block_2 = 10
+snake_block_1 = 20
+snake_block_2 = 20
 clock = pygame.time.Clock()
 snake_speed = 5
 
@@ -125,9 +125,9 @@ def gameRunning():
             if keys[pygame.K_s]:
                 x2_change = 0
                 y2_change = snake_block_2
-        if x1 < 0 or x1 > 790 or y1 < 0 or y1 > 590:
+        if x1 < 0 or x1 > 1920 or y1 < 0 or y1 > 1080:
             game_close = True
-        if x2 < 0 or x2 > 790 or y2 < 0 or y2 > 590:
+        if x2 < 0 or x2 > 1920 or y2 < 0 or y2 > 1080:
             game_close = True
 
         x1 += x1_change
@@ -160,16 +160,16 @@ def gameRunning():
         score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
         pygame.display.update()
 
-        if x1 == foodx and y1 == foody:
+        if (foodx >= x1 and foodx < x1 + snake_block_1 and foody >= y1 and foody < y1 + snake_block_1):
             foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
             foody = round(random.randrange(0, window_height - snake_block_1) / 10.0) * 10.0
             Length_of_snake1 += 1
 
-        if x2 == foodx and y2 == foody:
+        if (foodx >= x2 and foodx < x2 + snake_block_2 and foody >= y2 and foody < y2 + snake_block_2):
             foodx = round(random.randrange(0, window_width - snake_block_2) / 10.0) * 10.0
             foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
             Length_of_snake2 += 1
-
+        
         clock.tick(snake_speed)
     pygame.quit()
 
