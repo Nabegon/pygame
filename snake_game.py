@@ -13,8 +13,8 @@ white = (255,255,255)
 pygame.display.set_caption("Snake Game")
 
 # Set the window size
-window_width = 1920
-window_height = 1080
+window_width = 1280
+window_height = 1024
 window = pygame.display.set_mode((window_width, window_height))
 
 # Create a game loop
@@ -32,7 +32,7 @@ def score_counter(score_1, score_2):
     value_1 = score_font.render("Score of player 1: " + str(score_1), True, red)
     value_2 = score_font.render("Score of player 2: " + str(score_2), True, blue)
     window.blit(value_1, [0,0])
-    window.blit(value_2, [window_width - 200, 0])
+    window.blit(value_2, [window_width - 600, 0])
 
 def jedge_winner(score_1, score_2):
     font = pygame.font.Font(None, 36)
@@ -125,9 +125,9 @@ def gameRunning():
             if keys[pygame.K_s]:
                 x2_change = 0
                 y2_change = snake_block_2
-        if x1 < 0 or x1 > 1920 or y1 < 0 or y1 > 1080:
+        if x1 < 0 or x1 >= window_width or y1 < 0 or y1 >= window_height:
             game_close = True
-        if x2 < 0 or x2 > 1920 or y2 < 0 or y2 > 1080:
+        if x2 < 0 or x2 >= window_width or y2 < 0 or y2 >= window_height:
             game_close = True
 
         x1 += x1_change
