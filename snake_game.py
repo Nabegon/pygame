@@ -48,23 +48,24 @@ def jedge_winner(score_1, score_2):
 def snake_as_player_1(snake_block_1, snake_list_1):
     for x in snake_list_1:
         pygame.draw.rect(window, black, [x[0], x[1], snake_block_1, snake_block_1])
-        print("snake_list_1")
+
 def snake_as_player_2(snake_block_2, snake_list_2):
     for x in snake_list_2:
         pygame.draw.rect(window, blue, [x[0], x[1], snake_block_2, snake_block_2])
+
 def message(message, color):
     message = font_style.render(message, True, color)
-    window.blit(message, [100, window_height/2])
+    window.blit(message, [window_width / 6, window_height / 3])
 
 def gameRunning():
     game_over = False
     game_close = False
 
-    x1 = round(random.randrange(10, window_width - snake_block_1) / 10.0) * 10.0
-    y1 = round(random.randrange(10, window_height - snake_block_1) / 10.0) * 10.0
+    x1 = round(random.randrange(10, window_width - snake_block_1) / snake_block_1) * snake_block_1
+    y1 = round(random.randrange(10, window_height - snake_block_1) / snake_block_1) * snake_block_1
 
-    x2 = round(random.randrange(10, window_width - snake_block_1) / 10.0) * 10.0
-    y2 = round(random.randrange(10, window_height - snake_block_1) / 10.0) * 10.0
+    x2 = round(random.randrange(10, window_width - snake_block_2) / snake_block_2) * snake_block_2
+    y2 = round(random.randrange(10, window_height - snake_block_2) / snake_block_2) * snake_block_2
 
     x1_change = 0
     y1_change = 0
@@ -77,8 +78,9 @@ def gameRunning():
     Length_of_snake1 = 1
     Length_of_snake2 = 1
 
-    foodx = round(random.randrange(10, window_width - snake_block_1) / 10.0) * 10.0
-    foody = round(random.randrange(10, window_height - snake_block_1) / 10.0) * 10.0
+    food_size = 32
+    foodx = round(random.randrange(10, window_width - food_size) / food_size) * food_size
+    foody = round(random.randrange(10, window_height - food_size) / food_size) * food_size
 
     while not game_over:
         while game_close == True:
