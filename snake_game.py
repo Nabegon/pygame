@@ -1,5 +1,4 @@
 import pygame
-import time
 import random
 
 # Initialize Pygame
@@ -20,8 +19,8 @@ window = pygame.display.set_mode((window_width, window_height))
 # Create a game loop
 running = True
 
-snake_block_1 = 20
-snake_block_2 = 20
+snake_block_1 = 32
+snake_block_2 = 32
 clock = pygame.time.Clock()
 snake_speed = 5
 
@@ -38,7 +37,7 @@ def jedge_winner(score_1, score_2):
     font = pygame.font.Font(None, 36)
     text_1 = font.render("Win player 1", True, red)
     text_2 = font.render("Win player 2", True, red)
-    text_3 = font.render("引き分け", True, red)
+    text_3 = font.render("Draw", True, red)
     if score_1 > score_2:
         window.blit(text_1, [window_width / 2, window_height - 50])
     elif score_2 > score_1:
@@ -99,7 +98,7 @@ def gameRunning():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LEFT]:
                 x1_change = -snake_block_1
@@ -158,7 +157,6 @@ def gameRunning():
         snake_as_player_2(snake_block_2, snake_list_2)
 
         score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
-        pygame.display.update()
 
         if (foodx >= x1 and foodx < x1 + snake_block_1 and foody >= y1 and foody < y1 + snake_block_1):
             foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
@@ -170,6 +168,7 @@ def gameRunning():
             foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
             Length_of_snake2 += 1
         
+        pygame.display.update()
         clock.tick(snake_speed)
     pygame.quit()
 
