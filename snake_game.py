@@ -13,6 +13,14 @@ class Position:
         self.x = x
         self.y = y
 
+class Food:
+    def __init__(self):
+        self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+        self.surface_food = pygame.image.load('./battery.png')
+
+    def draw(self, window):
+        window.blit(self.surface_food, (self.position.x * TILE_SIZE, self.position.y * TILE_SIZE))
+    
 class BodyPart:
     def __init__(self, position, direction):
         self.position = position
@@ -23,8 +31,8 @@ class Snake:
     def __init__(self):
         # self.direction = random.randrange(4) # 0 -> up, 1 -> right, 2 -> down, 3 -> left
         direction = random.randrange(4) # 0 -> up, 1 -> right, 2 -> down, 3 -> left
-        start_x = random.randrange(3, 17)
-        start_y = random.randrange(3, 13)
+        start_x = random.randrange(3, GRID_WIDTH - 3)
+        start_y = random.randrange(3, GRID_HEIGHT - 3)
         initial_position = Position(start_x, start_y)
 
         # set the fields of the snake with their positions
@@ -196,8 +204,8 @@ def gameRunning():
     game_close = False
 
     player_1 = Snake()
+    food = Food()
 
-    # food_size =64
     # foodx = round(random.randrange(10, window_width - food_size) / food_size) * food_size
     # foody = round(random.randrange(10, window_height - food_size) / food_size) * food_size
 
@@ -262,6 +270,7 @@ def gameRunning():
         #     foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
         #     Length_of_snake2 += 1
         window.blit(window_with_background, (0, 0))
+        food.draw(window)
         player_1.advance()
         player_1.draw(window)
         pygame.display.update()
