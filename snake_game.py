@@ -13,6 +13,11 @@ class Position:
         self.x = x
         self.y = y
 
+    def __eq__(self, other):
+        if self.x == other.x and self.y == other.y:
+            return True
+        return False
+
 class Food:
     def __init__(self):
         self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
@@ -67,7 +72,7 @@ class Snake:
             self.surface_curve = pygame.image.load('./p2_curve.png')
             self.surface_tail = pygame.image.load('./p2_tail.png')
     
-    def advance(self, food):
+    def advance(self, food, other_snake):
         head = self.fields[0]
         match head.direction:
             case 0:
@@ -81,8 +86,12 @@ class Snake:
 
         if next_position.x < 0 or next_position.x > GRID_WIDTH  - 1 or next_position.y < 0 or next_position.y > GRID_HEIGHT - 1:
             return False
+        
+        for i in other_snake.fields:
+            if next_position == i.position:
+                return False
 
-        if not (next_position.x == food.position.x and next_position.y == food.position.y):
+        if not (next_position == food.position):
             self.fields.pop(len(self.fields) - 1)
         else:
             food.calculate_randam_position()
@@ -279,10 +288,10 @@ def gameRunning():
         #     Length_of_snake2 += 1
         window.blit(window_with_background, (0, 0))
         food.draw(window)
-        if player_1.advance(food) == False:
+        if player_1.advance(food, player_2) == False:
             game_close = True
         player_1.draw(window)
-        if player_2.advance(food) == False:
+        if player_2.advance(food, player_1) == False:
             game_close = True
         player_2.draw(window)
         pygame.display.update()
