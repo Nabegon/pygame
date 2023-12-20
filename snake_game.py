@@ -15,12 +15,14 @@ pygame.display.set_caption("Snake Game")
 window_width = 1280
 window_height = 1024
 window = pygame.display.set_mode((window_width, window_height))
+background = pygame.image.load('./background.png')
+window_with_background = pygame.transform.scale(background, (window_width, window_height))
 
 # Create a game loop
 running = True
 
-snake_block_1 = 32
-snake_block_2 = 32
+snake_block_1 = 64
+snake_block_2 = 64
 clock = pygame.time.Clock()
 snake_speed = 5
 
@@ -78,18 +80,17 @@ def gameRunning():
     Length_of_snake1 = 1
     Length_of_snake2 = 1
 
-    food_size = 32
+    food_size =64
     foodx = round(random.randrange(10, window_width - food_size) / food_size) * food_size
     foody = round(random.randrange(10, window_height - food_size) / food_size) * food_size
 
     while not game_over:
         while game_close == True:
-            window.fill(white)
             message("You lost! Press Q-Quit or C-Play Again", red)
             score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
             jedge_winner(Length_of_snake1 - 1, Length_of_snake2 - 1)
             pygame.display.update()
-
+            
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
@@ -135,7 +136,7 @@ def gameRunning():
         y1 += y1_change
         x2 += x2_change
         y2 += y2_change
-        window.fill(white)
+        window.blit(window_with_background, (0, 0))
         pygame.draw.rect(window, red, [foodx, foody, snake_block_1, snake_block_1])
         snake_HEAD_1 = []
         snake_HEAD_1.append(x1)
@@ -156,7 +157,7 @@ def gameRunning():
                 game_close = True
 
         snake_as_player_1(snake_block_1, snake_list_1)
-        snake_as_player_2(snake_block_2, snake_list_2)
+        snake_as_player_2(snake_block_2, snake_list_2)    
 
         score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
 
@@ -169,9 +170,10 @@ def gameRunning():
             foodx = round(random.randrange(0, window_width - snake_block_2) / 10.0) * 10.0
             foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
             Length_of_snake2 += 1
-        
+
         pygame.display.update()
         clock.tick(snake_speed)
+
     pygame.quit()
 
 gameRunning()
