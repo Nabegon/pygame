@@ -17,6 +17,9 @@ class Food:
     def __init__(self):
         self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
         self.surface_food = pygame.image.load('./battery.png')
+    
+    def calculate_randam_position(self):
+        self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
 
     def draw(self, window):
         window.blit(self.surface_food, (self.position.x * TILE_SIZE, self.position.y * TILE_SIZE))
@@ -39,23 +42,15 @@ class Snake:
         self.fields = [BodyPart(initial_position, direction)]
         match direction:
             case 0:
-                # self.fields.append(Position(initial_position.x, initial_position.y + 1))
-                #self.fields.append(Position(initial_position.x, initial_position.y + 2))
                 self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 1), direction))
                 self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 2), direction))
             case 1:
-                # self.fields.append(Position(initial_position.x - 1, initial_position.y))
-                # self.fields.append(Position(initial_position.x - 2, initial_position.y))
                 self.fields.append(BodyPart(Position(initial_position.x - 1, initial_position.y), direction))
                 self.fields.append(BodyPart(Position(initial_position.x - 2, initial_position.y), direction))
             case 2:
-                # self.fields.append(Position(initial_position.x, initial_position.y - 1))
-                # self.fields.append(Position(initial_position.x, initial_position.y - 2))
                 self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 1), direction))
                 self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 2), direction))
             case 3:
-                # self.fields.append(Position(initial_position.x + 1, initial_position.y))
-                # self.fields.append(Position(initial_position.x + 2, initial_position.y))
                 self.fields.append(BodyPart(Position(initial_position.x + 1, initial_position.y), direction))
                 self.fields.append(BodyPart(Position(initial_position.x + 2, initial_position.y), direction))
         
@@ -65,22 +60,24 @@ class Snake:
         self.surface_curve = pygame.image.load('./p1_curve.png')
         self.surface_tail = pygame.image.load('./p1_tail.png')
     
-    def advance(self):
+    def advance(self, food):
         head = self.fields[0]
-        self.fields.pop(len(self.fields) - 1)
         match head.direction:
             case 0:
-                # self.fields.insert(0, Position(head.x, head.y - 1))
-                self.fields.insert(0, BodyPart(Position(head.position.x, head.position.y - 1), head.direction))
+                next_position = Position(head.position.x, head.position.y - 1)
             case 1:
-                # self.fields.insert(0, Position(head.x + 1, head.y))
-                self.fields.insert(0, BodyPart(Position(head.position.x + 1, head.position.y), head.direction))
+                next_position = Position(head.position.x + 1, head.position.y)
             case 2:
-                # self.fields.insert(0, Position(head.x, head.y + 1))
-                self.fields.insert(0, BodyPart(Position(head.position.x, head.position.y + 1), head.direction))
+                next_position = Position(head.position.x, head.position.y + 1)
             case 3:
-                # self.fields.insert(0, Position(head.x - 1, head.y))
-                self.fields.insert(0, BodyPart(Position(head.position.x - 1, head.position.y), head.direction))
+                next_position = Position(head.position.x - 1, head.position.y)
+        
+        if not (next_position.x == food.position.x and next_position.y == food.position.y):
+            self.fields.pop(len(self.fields) - 1)
+        else:
+            food.calculate_randam_position()
+
+        self.fields.insert(0, BodyPart(next_position, head.direction))
 
     def draw(self, window):
         for i in range(len(self.fields)):
@@ -171,7 +168,7 @@ running = True
 
 # speed of the snake
 clock = pygame.time.Clock()
-snake_speed = 2
+snake_speed = 6
 
 # font. after we use grafik, just delete here
 font_style = pygame.font.SysFont(None, 50)
@@ -271,7 +268,7 @@ def gameRunning():
         #     Length_of_snake2 += 1
         window.blit(window_with_background, (0, 0))
         food.draw(window)
-        player_1.advance()
+        player_1.advance(food)
         player_1.draw(window)
         pygame.display.update()
         clock.tick(snake_speed)
