@@ -90,21 +90,60 @@ class Snake:
                 window.blit(rotated_head, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
 
             elif i == len(self.fields) - 1:
-                window.blit(self.surface_tail, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
+                match current_bodypart.direction:
+                    case 0:
+                        rotated_body = pygame.transform.rotate(self.surface_tail, 270)
+                    case 1:
+                        rotated_body = pygame.transform.rotate(self.surface_tail, 180)
+                    case 2:
+                        rotated_body = pygame.transform.rotate(self.surface_tail, 90)
+                    case 3:
+                        rotated_body = self.surface_tail
+                window.blit(rotated_body, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
                 
 
             else:
-                # leading_position = self.fields[i-1]
-                # trailing_position = self.fields[i+1]
-                # if leading_position.x == trailing_position.x:
-                #     rotated_body = self.surface_straight
-                # elif leading_position.y == trailing_position.y:
-                #     rotated_body = pygame.transform.rotate(self.surface_straight, 270)
-                #     # rotated_body = self.surface_straight
-                # else:
-                #     rotated_body = self.surface_curve
-                #     if leading_position.x > trailing_position.y
-                window.blit(self.surface_curve, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
+                current_direction = current_bodypart.direction
+                following_bodypart = self.fields[i + 1]
+                follwoing_direction = following_bodypart.direction
+
+                match current_direction:
+                    case 0:
+                        match follwoing_direction:
+                            case 0:
+                                rotated_body = self.surface_straight
+                            case 1:
+                                rotated_body = pygame.transform.rotate(self.surface_curve, 270)
+                            case 3:
+                                rotated_body = pygame.transform.rotate(pygame.transform.flip(self.surface_curve, True, False), 90)
+                    case 1:
+                        match follwoing_direction:
+                            case 0:
+                                rotated_body = pygame.transform.flip(self.surface_curve, True, False)
+                            case 1:
+                                rotated_body = pygame.transform.rotate(self.surface_straight, 270)
+                            case 2:
+                                rotated_body = pygame.transform.rotate(self.surface_curve, 180)
+
+                    case 2:
+                        match follwoing_direction:
+                            case 1:
+                                rotated_body = pygame.transform.rotate(pygame.transform.flip(self.surface_curve, False, True), 90)
+                            case 2:
+                                rotated_body = pygame.transform.flip(self.surface_straight, False, True)
+                            case 3:
+                                rotated_body = pygame.transform.rotate(self.surface_curve, 90)
+                    case 3:
+                        match follwoing_direction:
+                            case 0:
+                                rotated_body = self.surface_curve
+                            case 2:
+                                rotated_body = pygame.transform.flip(self.surface_curve, False, True)
+                            case 3:
+                                rotated_body = pygame.transform.rotate(self.surface_straight, 90)
+
+                window.blit(rotated_body, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
+                
 
 
 
@@ -124,7 +163,7 @@ running = True
 
 # speed of the snake
 clock = pygame.time.Clock()
-snake_speed = 5
+snake_speed = 2
 
 # font. after we use grafik, just delete here
 font_style = pygame.font.SysFont(None, 50)
