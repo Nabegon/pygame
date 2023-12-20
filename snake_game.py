@@ -90,6 +90,10 @@ class Snake:
         for i in other_snake.fields:
             if next_position == i.position:
                 return False
+        
+        for i in self.fields:
+            if next_position == i.position:
+                return False
 
         if not (next_position == food.position):
             self.fields.pop(len(self.fields) - 1)
