@@ -1,94 +1,172 @@
 import pygame
 import random
 
+GRID_WIDTH = 20
+GRID_HEIGHT = 16
+TILE_SIZE = 64
+
+WINDOW_WIDTH = GRID_WIDTH * TILE_SIZE
+WINDOW_HEIGHT = GRID_HEIGHT * TILE_SIZE
+
+class Position:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+class BodyPart:
+    def __init__(self, position, direction):
+        self.position = position
+        self.direction = direction
+        
+
+class Snake:
+    def __init__(self):
+        # self.direction = random.randrange(4) # 0 -> up, 1 -> right, 2 -> down, 3 -> left
+        direction = random.randrange(4) # 0 -> up, 1 -> right, 2 -> down, 3 -> left
+        start_x = random.randrange(3, 17)
+        start_y = random.randrange(3, 13)
+        initial_position = Position(start_x, start_y)
+
+        # set the fields of the snake with their positions
+        self.fields = [BodyPart(initial_position, direction)]
+        match direction:
+            case 0:
+                # self.fields.append(Position(initial_position.x, initial_position.y + 1))
+                #self.fields.append(Position(initial_position.x, initial_position.y + 2))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 1), direction))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 2), direction))
+            case 1:
+                # self.fields.append(Position(initial_position.x - 1, initial_position.y))
+                # self.fields.append(Position(initial_position.x - 2, initial_position.y))
+                self.fields.append(BodyPart(Position(initial_position.x - 1, initial_position.y), direction))
+                self.fields.append(BodyPart(Position(initial_position.x - 2, initial_position.y), direction))
+            case 2:
+                # self.fields.append(Position(initial_position.x, initial_position.y - 1))
+                # self.fields.append(Position(initial_position.x, initial_position.y - 2))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 1), direction))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 2), direction))
+            case 3:
+                # self.fields.append(Position(initial_position.x + 1, initial_position.y))
+                # self.fields.append(Position(initial_position.x + 2, initial_position.y))
+                self.fields.append(BodyPart(Position(initial_position.x + 1, initial_position.y), direction))
+                self.fields.append(BodyPart(Position(initial_position.x + 2, initial_position.y), direction))
+        
+        # load graphics
+        self.surface_head = pygame.image.load('./p1_head.png')
+        self.surface_straight = pygame.image.load('./p1_straight.png')
+        self.surface_curve = pygame.image.load('./p1_curve.png')
+        self.surface_tail = pygame.image.load('./p1_tail.png')
+    
+    def advance(self):
+        head = self.fields[0]
+        self.fields.pop(len(self.fields) - 1)
+        match head.direction:
+            case 0:
+                # self.fields.insert(0, Position(head.x, head.y - 1))
+                self.fields.insert(0, BodyPart(Position(head.position.x, head.position.y - 1), head.direction))
+            case 1:
+                # self.fields.insert(0, Position(head.x + 1, head.y))
+                self.fields.insert(0, BodyPart(Position(head.position.x + 1, head.position.y), head.direction))
+            case 2:
+                # self.fields.insert(0, Position(head.x, head.y + 1))
+                self.fields.insert(0, BodyPart(Position(head.position.x, head.position.y + 1), head.direction))
+            case 3:
+                # self.fields.insert(0, Position(head.x - 1, head.y))
+                self.fields.insert(0, BodyPart(Position(head.position.x - 1, head.position.y), head.direction))
+
+    def draw(self, window):
+        for i in range(len(self.fields)):
+            current_bodypart = self.fields[i]
+            if i == 0:
+                match self.fields[0].direction:
+                    case 0:
+                        rotated_head = pygame.transform.rotate(self.surface_head, 270)
+                    case 1:
+                        rotated_head = pygame.transform.rotate(self.surface_head, 180)
+                    case 2:
+                        rotated_head = pygame.transform.rotate(self.surface_head, 90)
+                    case 3:
+                        rotated_head = self.surface_head
+                window.blit(rotated_head, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
+
+            elif i == len(self.fields) - 1:
+                window.blit(self.surface_tail, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
+                
+
+            else:
+                # leading_position = self.fields[i-1]
+                # trailing_position = self.fields[i+1]
+                # if leading_position.x == trailing_position.x:
+                #     rotated_body = self.surface_straight
+                # elif leading_position.y == trailing_position.y:
+                #     rotated_body = pygame.transform.rotate(self.surface_straight, 270)
+                #     # rotated_body = self.surface_straight
+                # else:
+                #     rotated_body = self.surface_curve
+                #     if leading_position.x > trailing_position.y
+                window.blit(self.surface_curve, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
+
+
+
 # Initialize Pygame
 pygame.init()
 
-blue = (0,0,255)
-black = (0, 0, 0)
-red = (255,0,0)
-white = (255,255,255)
 # Set the window title
 pygame.display.set_caption("Snake Game")
 
-# Set the window size
-window_width = 1280
-window_height = 1024
-window = pygame.display.set_mode((window_width, window_height))
+# Set the window size etc.
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 background = pygame.image.load('./background.png')
-window_with_background = pygame.transform.scale(background, (window_width, window_height))
+window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
 # Create a game loop
 running = True
 
-snake_block_1 = 64
-snake_block_2 = 64
+# speed of the snake
 clock = pygame.time.Clock()
 snake_speed = 5
 
+# font. after we use grafik, just delete here
 font_style = pygame.font.SysFont(None, 50)
 score_font = pygame.font.SysFont("comicasansms", 35)
 
-def score_counter(score_1, score_2):
-    value_1 = score_font.render("Score of player 1: " + str(score_1), True, red)
-    value_2 = score_font.render("Score of player 2: " + str(score_2), True, blue)
-    window.blit(value_1, [0,0])
-    window.blit(value_2, [window_width - 600, 0])
+# def score_counter(score_1, score_2):
+#     value_1 = score_font.render("Score of player 1: " + str(score_1), True, red)
+#     value_2 = score_font.render("Score of player 2: " + str(score_2), True, blue)
+#     window.blit(value_1, [0,0])
+#     window.blit(value_2, [window_width - 600, 0])
 
-def jedge_winner(score_1, score_2):
-    font = pygame.font.Font(None, 36)
-    text_1 = font.render("Win player 1", True, red)
-    text_2 = font.render("Win player 2", True, red)
-    text_3 = font.render("Draw", True, red)
-    if score_1 > score_2:
-        window.blit(text_1, [window_width / 2, window_height - 50])
-    elif score_2 > score_1:
-        window.blit(text_2, [window_width / 2, window_height - 50])
-    else:
-        window.blit(text_3, [window_width / 2, window_height - 50])
+# def jedge_winner(score_1, score_2):
+#     font = pygame.font.Font(None, 36)
+#     text_1 = font.render("Win player 1", True, red)
+#     text_2 = font.render("Win player 2", True, red)
+#     text_3 = font.render("Draw", True, red)
+#     if score_1 > score_2:
+#         window.blit(text_1, [window_width / 2, window_height - 50])
+#     elif score_2 > score_1:
+#         window.blit(text_2, [window_width / 2, window_height - 50])
+#     else:
+#         window.blit(text_3, [window_width / 2, window_height - 50])
 
-def snake_as_player_1(snake_block_1, snake_list_1):
-    for x in snake_list_1:
-        pygame.draw.rect(window, black, [x[0], x[1], snake_block_1, snake_block_1])
-
-def snake_as_player_2(snake_block_2, snake_list_2):
-    for x in snake_list_2:
-        pygame.draw.rect(window, blue, [x[0], x[1], snake_block_2, snake_block_2])
-
-def message(message, color):
-    message = font_style.render(message, True, color)
-    window.blit(message, [window_width / 6, window_height / 3])
+# def message(message, color):
+#     message = font_style.render(message, True, color)
+#     window.blit(message, [window_width / 6, window_height / 3])
 
 def gameRunning():
     game_over = False
     game_close = False
 
-    x1 = round(random.randrange(10, window_width - snake_block_1) / snake_block_1) * snake_block_1
-    y1 = round(random.randrange(10, window_height - snake_block_1) / snake_block_1) * snake_block_1
+    player_1 = Snake()
 
-    x2 = round(random.randrange(10, window_width - snake_block_2) / snake_block_2) * snake_block_2
-    y2 = round(random.randrange(10, window_height - snake_block_2) / snake_block_2) * snake_block_2
-
-    x1_change = 0
-    y1_change = 0
-
-    x2_change = 0
-    y2_change = 0
-
-    snake_list_1 = []
-    snake_list_2 = []
-    Length_of_snake1 = 1
-    Length_of_snake2 = 1
-
-    food_size =64
-    foodx = round(random.randrange(10, window_width - food_size) / food_size) * food_size
-    foody = round(random.randrange(10, window_height - food_size) / food_size) * food_size
+    # food_size =64
+    # foodx = round(random.randrange(10, window_width - food_size) / food_size) * food_size
+    # foody = round(random.randrange(10, window_height - food_size) / food_size) * food_size
 
     while not game_over:
         while game_close == True:
-            message("You lost! Press Q-Quit or C-Play Again", red)
-            score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
-            jedge_winner(Length_of_snake1 - 1, Length_of_snake2 - 1)
+            # message("You lost! Press Q-Quit or C-Play Again", red)
+            # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
+            # jedge_winner(Length_of_snake1 - 1, Length_of_snake2 - 1)
             pygame.display.update()
             
             for event in pygame.event.get():
@@ -103,74 +181,50 @@ def gameRunning():
             if event.type == pygame.QUIT:
                 pygame.quit()
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_LEFT]:
-                x1_change = -snake_block_1
-                y1_change = 0
-            if keys[pygame.K_RIGHT]:
-                x1_change = snake_block_1
-                y1_change = 0
             if keys[pygame.K_UP]:
-                x1_change = 0
-                y1_change = -snake_block_1
+                # player_1.direction = 0
+                player_1.fields[0].direction = 0
+            if keys[pygame.K_RIGHT]:
+                # player_1.direction = 1
+                player_1.fields[0].direction = 1
             if keys[pygame.K_DOWN]:
-                x1_change = 0
-                y1_change = snake_block_1
-            if keys[pygame.K_a]:
-                x2_change = -snake_block_2
-                y2_change = 0
-            if keys[pygame.K_d]:
-                x2_change = snake_block_2
-                y2_change = 0
-            if keys[pygame.K_w]:
-                x2_change = 0
-                y2_change = -snake_block_2
-            if keys[pygame.K_s]:
-                x2_change = 0
-                y2_change = snake_block_2
-        if x1 < 0 or x1 >= window_width or y1 < 0 or y1 >= window_height:
-            game_close = True
-        if x2 < 0 or x2 >= window_width or y2 < 0 or y2 >= window_height:
-            game_close = True
+                # player_1.direction = 2
+                player_1.fields[0].direction = 2
+            if keys[pygame.K_LEFT]:
+                # player_1.direction = 3
+                player_1.fields[0].direction = 3
 
-        x1 += x1_change
-        y1 += y1_change
-        x2 += x2_change
-        y2 += y2_change
+            # if keys[pygame.K_a]:
+            #     x2_change = -snake_block_2
+            #     y2_change = 0
+            # if keys[pygame.K_d]:
+            #     x2_change = snake_block_2
+            #     y2_change = 0
+            # if keys[pygame.K_w]:
+            #     x2_change = 0
+            #     y2_change = -snake_block_2
+            # if keys[pygame.K_s]:
+            #     x2_change = 0
+            #     y2_change = snake_block_2
+        # if x1 < 0 or x1 >= window_width or y1 < 0 or y1 >= window_height:
+        #     game_close = True
+        # if x2 < 0 or x2 >= window_width or y2 < 0 or y2 >= window_height:
+        #     game_close = True
+
+        # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
+
+        # if (foodx >= x1 and foodx < x1 + snake_block_1 and foody >= y1 and foody < y1 + snake_block_1):
+        #     foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
+        #     foody = round(random.randrange(0, window_height - snake_block_1) / 10.0) * 10.0
+        #     Length_of_snake1 += 1
+
+        # if (foodx >= x2 and foodx < x2 + snake_block_2 and foody >= y2 and foody < y2 + snake_block_2):
+        #     foodx = round(random.randrange(0, window_width - snake_block_2) / 10.0) * 10.0
+        #     foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
+        #     Length_of_snake2 += 1
         window.blit(window_with_background, (0, 0))
-        pygame.draw.rect(window, red, [foodx, foody, snake_block_1, snake_block_1])
-        snake_HEAD_1 = []
-        snake_HEAD_1.append(x1)
-        snake_HEAD_1.append(y1)
-        snake_list_1.append(snake_HEAD_1)
-        if len(snake_list_1) > Length_of_snake1:
-            del snake_list_1[0]
-
-        snake_HEAD_2 = []
-        snake_HEAD_2.append(x2)
-        snake_HEAD_2.append(y2)
-        snake_list_2.append(snake_HEAD_2)
-        if len(snake_list_2) > Length_of_snake2:
-            del snake_list_2[0]
-
-        for x in snake_list_1[:-1]:
-            if x == snake_HEAD_1:
-                game_close = True
-
-        snake_as_player_1(snake_block_1, snake_list_1)
-        snake_as_player_2(snake_block_2, snake_list_2)    
-
-        score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
-
-        if (foodx >= x1 and foodx < x1 + snake_block_1 and foody >= y1 and foody < y1 + snake_block_1):
-            foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
-            foody = round(random.randrange(0, window_height - snake_block_1) / 10.0) * 10.0
-            Length_of_snake1 += 1
-
-        if (foodx >= x2 and foodx < x2 + snake_block_2 and foody >= y2 and foody < y2 + snake_block_2):
-            foodx = round(random.randrange(0, window_width - snake_block_2) / 10.0) * 10.0
-            foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
-            Length_of_snake2 += 1
-
+        player_1.advance()
+        player_1.draw(window)
         pygame.display.update()
         clock.tick(snake_speed)
 

@@ -1,0 +1,15 @@
+class Snake:
+  Direction: Enum{0 (up), 1 Left, 2 Down, 3 Right}
+  Length: Int
+  Fields: [coordinates]
+
+  advance()
+  
+class coordinates:
+  X: int
+  Y: int
+
+
+
+
+intersect(Snake, Snake)
