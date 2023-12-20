@@ -212,11 +212,11 @@ snake_speed = 2
 font_style = pygame.font.SysFont(None, 50)
 score_font = pygame.font.SysFont("comicasansms", 35)
 
-# def score_counter(score_1, score_2):
-#     value_1 = score_font.render("Score of player 1: " + str(score_1), True, red)
-#     value_2 = score_font.render("Score of player 2: " + str(score_2), True, blue)
-#     window.blit(value_1, [0,0])
-#     window.blit(value_2, [window_width - 600, 0])
+def score_counter(score_1, score_2):
+    value_1 = score_font.render("Score of player 1: " + str(score_1), True, white)
+    value_2 = score_font.render("Score of player 2: " + str(score_2), True, white)
+    window.blit(value_1, [0,0])
+    window.blit(value_2, [WINDOW_WIDTH - 600, 0])
 
 # def jedge_winner(score_1, score_2):
 #     font = pygame.font.Font(None, 36)
@@ -244,8 +244,12 @@ def gameRunning():
 
     while not game_over:
         while game_close == True:
-            message("You lost! Press Q-Quit or C-Play Again", white)
-            # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
+            if game_winner_1:
+                message("Player 1 won the game! Press Q-Quit or C-Play Again", white)
+            else:
+                message("Player 2 won the game! Press Q-Quit or C-Play Again", white)
+            # score_counter(len(player_1.fields), len(player_2.fields))
+            
             # jedge_winner(Length_of_snake1 - 1, Length_of_snake2 - 1)
             pygame.display.update()
             
@@ -279,24 +283,16 @@ def gameRunning():
             if keys[pygame.K_s]:
                 player_2.change_direction(2)
 
-        # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
-
-        # if (foodx >= x1 and foodx < x1 + snake_block_1 and foody >= y1 and foody < y1 + snake_block_1):
-        #     foodx = round(random.randrange(0, window_width - snake_block_1) / 10.0) * 10.0
-        #     foody = round(random.randrange(0, window_height - snake_block_1) / 10.0) * 10.0
-        #     Length_of_snake1 += 1
-
-        # if (foodx >= x2 and foodx < x2 + snake_block_2 and foody >= y2 and foody < y2 + snake_block_2):
-        #     foodx = round(random.randrange(0, window_width - snake_block_2) / 10.0) * 10.0
-        #     foody = round(random.randrange(0, window_height - snake_block_2) / 10.0) * 10.0
-        #     Length_of_snake2 += 1
         window.blit(window_with_background, (0, 0))
         food.draw(window)
+        score_counter(len(player_1.fields), len(player_2.fields))
         if player_1.advance(food, player_2) == False:
             game_close = True
+            game_winner_1 = False
         player_1.draw(window)
         if player_2.advance(food, player_1) == False:
             game_close = True
+            game_winner_1 = True
         player_2.draw(window)
         pygame.display.update()
         clock.tick(snake_speed)
