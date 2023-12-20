@@ -158,7 +158,20 @@ class Snake:
                                 rotated_body = pygame.transform.rotate(self.surface_straight, 90)
 
                 window.blit(rotated_body, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
-                
+
+    def change_direction(self, direction):
+        #print(self.fields[0].direction)
+        # if direction == 0
+        if direction == 2 and self.fields[0].direction == 0:
+            return
+        elif direction == 3 and self.fields[0].direction == 1:
+            return
+        elif direction == 0 and self.fields[0].direction == 2:
+            return
+        elif direction == 1 and self.fields[0].direction == 3:
+            return
+
+        self.fields[0].direction = direction
 
 
 
@@ -180,7 +193,7 @@ running = True
 
 # speed of the snake
 clock = pygame.time.Clock()
-snake_speed = 6
+snake_speed = 2
 
 # font. after we use grafik, just delete here
 font_style = pygame.font.SysFont(None, 50)
@@ -216,9 +229,6 @@ def gameRunning():
     player_2 = Snake(False)
     food = Food()
 
-    # foodx = round(random.randrange(10, window_width - food_size) / food_size) * food_size
-    # foody = round(random.randrange(10, window_height - food_size) / food_size) * food_size
-
     while not game_over:
         while game_close == True:
             message("You lost! Press Q-Quit or C-Play Again", white)
@@ -239,26 +249,22 @@ def gameRunning():
                 pygame.quit()
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP]:
-                # player_1.direction = 0
-                player_1.fields[0].direction = 0
+                player_1.change_direction(0)
             if keys[pygame.K_RIGHT]:
-                # player_1.direction = 1
-                player_1.fields[0].direction = 1
+                player_1.change_direction(1)
             if keys[pygame.K_DOWN]:
-                # player_1.direction = 2
-                player_1.fields[0].direction = 2
+                player_1.change_direction(2)
             if keys[pygame.K_LEFT]:
-                # player_1.direction = 3
-                player_1.fields[0].direction = 3
+                player_1.change_direction(3)
 
             if keys[pygame.K_a]:
-                player_2.fields[0].direction = 0
+                player_2.change_direction(3)
             if keys[pygame.K_d]:
-                player_2.fields[0].direction = 1
+                player_2.change_direction(1)
             if keys[pygame.K_w]:
-                player_2.fields[0].direction = 2
+                player_2.change_direction(0)
             if keys[pygame.K_s]:
-                player_2.fields[0].direction = 3
+                player_2.change_direction(2)
 
         # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
 
