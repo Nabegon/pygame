@@ -78,7 +78,10 @@ class Snake:
                 next_position = Position(head.position.x, head.position.y + 1)
             case 3:
                 next_position = Position(head.position.x - 1, head.position.y)
-        
+
+        if next_position.x < 0 or next_position.x > GRID_WIDTH  - 1 or next_position.y < 0 or next_position.y > GRID_HEIGHT - 1:
+            return False
+
         if not (next_position.x == food.position.x and next_position.y == food.position.y):
             self.fields.pop(len(self.fields) - 1)
         else:
@@ -162,6 +165,8 @@ class Snake:
 # Initialize Pygame
 pygame.init()
 
+white = 255, 255, 255, 255
+
 # Set the window title
 pygame.display.set_caption("Snake Game")
 
@@ -199,9 +204,9 @@ score_font = pygame.font.SysFont("comicasansms", 35)
 #     else:
 #         window.blit(text_3, [window_width / 2, window_height - 50])
 
-# def message(message, color):
-#     message = font_style.render(message, True, color)
-#     window.blit(message, [window_width / 6, window_height / 3])
+def message(message, color):
+    message = font_style.render(message, True, color)
+    window.blit(message, [WINDOW_HEIGHT / 6, WINDOW_HEIGHT / 3])
 
 def gameRunning():
     game_over = False
@@ -216,7 +221,7 @@ def gameRunning():
 
     while not game_over:
         while game_close == True:
-            # message("You lost! Press Q-Quit or C-Play Again", red)
+            message("You lost! Press Q-Quit or C-Play Again", white)
             # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
             # jedge_winner(Length_of_snake1 - 1, Length_of_snake2 - 1)
             pygame.display.update()
@@ -254,10 +259,6 @@ def gameRunning():
                 player_2.fields[0].direction = 2
             if keys[pygame.K_s]:
                 player_2.fields[0].direction = 3
-        # if x1 < 0 or x1 >= window_width or y1 < 0 or y1 >= window_height:
-        #     game_close = True
-        # if x2 < 0 or x2 >= window_width or y2 < 0 or y2 >= window_height:
-        #     game_close = True
 
         # score_counter(Length_of_snake1 - 1, Length_of_snake2 - 1)
 
@@ -272,9 +273,11 @@ def gameRunning():
         #     Length_of_snake2 += 1
         window.blit(window_with_background, (0, 0))
         food.draw(window)
-        player_1.advance(food)
+        if player_1.advance(food) == False:
+            game_close = True
         player_1.draw(window)
-        player_2.advance(food)
+        if player_2.advance(food) == False:
+            game_close = True
         player_2.draw(window)
         pygame.display.update()
         clock.tick(snake_speed)
