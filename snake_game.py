@@ -49,27 +49,27 @@ class BodyPart:
 
 class Snake:
     def __init__(self, alternative_color):
-        direction = random.randrange(4)
+        self.direction = random.randrange(4)
         start_x = random.randrange(3, GRID_WIDTH - 3)
         start_y = random.randrange(3, GRID_HEIGHT - 3)
         initial_position = Position(start_x, start_y)
 
 
         # set the fields of the snake with their positions
-        self.fields = [BodyPart(initial_position, direction)]
-        match direction:
+        self.fields = [BodyPart(initial_position, self.direction)]
+        match self.direction:
             case 0:
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 1), direction))
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 2), direction))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 1), self.direction))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 2), self.direction))
             case 1:
-                self.fields.append(BodyPart(Position(initial_position.x - 1, initial_position.y), direction))
-                self.fields.append(BodyPart(Position(initial_position.x - 2, initial_position.y), direction))
+                self.fields.append(BodyPart(Position(initial_position.x - 1, initial_position.y), self.direction))
+                self.fields.append(BodyPart(Position(initial_position.x - 2, initial_position.y), self.direction))
             case 2:
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 1), direction))
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 2), direction))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 1), self.direction))
+                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 2), self.direction))
             case 3:
-                self.fields.append(BodyPart(Position(initial_position.x + 1, initial_position.y), direction))
-                self.fields.append(BodyPart(Position(initial_position.x + 2, initial_position.y), direction))
+                self.fields.append(BodyPart(Position(initial_position.x + 1, initial_position.y), self.direction))
+                self.fields.append(BodyPart(Position(initial_position.x + 2, initial_position.y), self.direction))
         
         # load graphics
         if alternative_color:
@@ -91,6 +91,7 @@ class Snake:
             self.time_delta = self.time_delta - SNAKE_SPEED
 
             # get direction of head and determine its next position
+            self.fields[0].direction = self.direction
             head = self.fields[0]
             match head.direction:
                 case 0:
@@ -207,7 +208,7 @@ class Snake:
         elif direction == 1 and self.fields[0].direction == 3:
             return
         
-        self.fields[0].direction = direction
+        self.direction = direction
 
 
 def message(window, message, color):
