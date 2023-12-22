@@ -236,7 +236,9 @@ class Snake:
 
 def message(window, message, color):
     message = pygame.font.SysFont(None, 50).render(message, True, color)
-    window.blit(message, [WINDOW_HEIGHT / 6, WINDOW_HEIGHT / 3])
+    x_pos = WINDOW_WIDTH / 2 - game_over_surface.get_width() / 2 
+    y_pos = WINDOW_HEIGHT / 2 - game_over_surface.get_height() / 2
+    window.blit(message, (x_pos, y_pos))
 
 
 # Initialize Pygame
@@ -247,9 +249,12 @@ white = 255, 255, 255, 255
 # Set the window title
 pygame.display.set_caption("Snake Game")
 
+# Load images
+background = pygame.image.load('./background.png')
+game_over_surface = pygame.image.load('./gameover.png')
+
 # Set the window size etc.
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-background = pygame.image.load('./background.png')
 window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
 player_1 = Snake(True)
@@ -323,8 +328,6 @@ def game_running():
     player_1.draw(window)
     player_2.draw(window)
 
-    
-
 def game_over():
     global game_state
     global player_1
@@ -347,10 +350,13 @@ def game_over():
                         game_state = 1
     
     # draw frame
+    x_pos = WINDOW_WIDTH / 2 - game_over_surface.get_width() / 2 
+    y_pos = WINDOW_HEIGHT / 2 - game_over_surface.get_height() / 2 
+    window.blit(game_over_surface, (x_pos, y_pos))
     if game_winner_1:
         message(window, "Player 1 won the game! Press Q-Quit or C-Play Again", white)
     else:
-        message(window, "Player 2 won the game! Press Q-Quit or C-Play Again", white)       
+        message(window, "Player 2 won the game! Press Q-Quit or C-Play Again", white)
 
 
 # game loop
