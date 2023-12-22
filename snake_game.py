@@ -20,6 +20,7 @@ WINDOW_HEIGHT = GRID_HEIGHT * TILE_SIZE
 
 SNAKE_SPEED = 350
 
+CHANGE_ANIMATION_POINT = 250
 class Position:
     def __init__(self, x, y):
         self.x = x
@@ -33,13 +34,35 @@ class Position:
 class Food:
     def __init__(self):
         self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
-        self.surface_food = pygame.image.load('./battery.png')
+        self.surface_0 = pygame.image.load('./battery_0.png')
+        self.surface_1 = pygame.image.load('./battery_1.png')
+        self.surface_2 = pygame.image.load('./battery_2.png')
+        self.animation_step = 0 # 0 - 3
+        self.time_delta = 0
     
     def calculate_randam_position(self):
         self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
 
+    def advance(self, time_delta):
+        self.time_delta += time_delta
+        if self.time_delta >= CHANGE_ANIMATION_POINT:
+            if self.animation_step == 3:
+                self.animation_step = 0
+            else:
+                self.animation_step += 1            
+            self.time_delta = self.time_delta - CHANGE_ANIMATION_POINT
+
     def draw(self, window):
-        window.blit(self.surface_food, (self.position.x * TILE_SIZE, self.position.y * TILE_SIZE))
+        match self.animation_step:
+            case 0:
+                surface_food = self.surface_0
+            case 1:
+                surface_food = self.surface_1
+            case 2:
+                surface_food = self.surface_2
+            case 3:
+                surface_food = self.surface_1      
+        window.blit(surface_food, (self.position.x * TILE_SIZE, self.position.y * TILE_SIZE))
     
 class BodyPart:
     def __init__(self, position, direction):
@@ -293,7 +316,7 @@ def game_running():
     if player_2.advance(time_delta, food, player_1) == False:
         game_winner_1 = True
         game_state = 2
-    
+    food.advance(time_delta)
     # draw frame
     window.blit(window_with_background, (0, 0))
     food.draw(window)
