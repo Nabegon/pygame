@@ -252,6 +252,7 @@ pygame.display.set_caption("Snake Game")
 # Load images
 background = pygame.image.load('./background.png')
 game_over_surface = pygame.image.load('./gameover.png')
+title_surface = pygame.image.load('./title.png')
 
 # Set the window size etc.
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -280,7 +281,8 @@ def game_init():
                 game_state = 1
 
     window.blit(window_with_background, (0, 0))
-    message(window, "SNAKEGAME", (255, 255, 255, 255))
+    y_pos = WINDOW_HEIGHT / 2 - title_surface.get_height() / 2
+    window.blit(title_surface, (0, y_pos))
 
 def game_running():
     global game_state
