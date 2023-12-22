@@ -304,7 +304,10 @@ def game_running():
 
 def game_over():
     global game_state
-
+    global player_1
+    global player_2
+    global food
+    
     # check input and change state accordingly
     for event in pygame.event.get():
         match event.type:
@@ -315,7 +318,10 @@ def game_over():
                     case pygame.K_q:
                         game_state = 3
                     case pygame.K_c:
-                        game_state = 1  
+                        player_1 = Snake(True)
+                        player_2 = Snake(False)
+                        food = Food()
+                        game_state = 1
     
     # draw frame
     if game_winner_1:
