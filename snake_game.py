@@ -1,12 +1,24 @@
 import pygame
 import random
 
+# UP = 0
+# RIGHT = 1
+# DOWN = 2
+# LEFT = 3
+
+# GAME_INIT = 0
+# GAME_RUNNING = 1
+# GAME_OVER = 2
+# GAME_CLOSE = 3
+
 GRID_WIDTH = 20
 GRID_HEIGHT = 16
 TILE_SIZE = 64
 
 WINDOW_WIDTH = GRID_WIDTH * TILE_SIZE
 WINDOW_HEIGHT = GRID_HEIGHT * TILE_SIZE
+
+SNAKE_SPEED = 350
 
 class Position:
     def __init__(self, x, y):
@@ -37,8 +49,7 @@ class BodyPart:
 
 class Snake:
     def __init__(self, alternative_color):
-        # self.direction = random.randrange(4) # 0 -> up, 1 -> right, 2 -> down, 3 -> left
-        direction = random.randrange(4) # 0 -> up, 1 -> right, 2 -> down, 3 -> left
+        direction = random.randrange(4)
         start_x = random.randrange(3, GRID_WIDTH - 3)
         start_y = random.randrange(3, GRID_HEIGHT - 3)
         initial_position = Position(start_x, start_y)
@@ -71,41 +82,51 @@ class Snake:
             self.surface_straight = pygame.image.load('./p2_straight.png')
             self.surface_curve = pygame.image.load('./p2_curve.png')
             self.surface_tail = pygame.image.load('./p2_tail.png')
+        
+        self.time_delta = 0
     
-    def advance(self, food, other_snake):
-        head = self.fields[0]
-        match head.direction:
-            case 0:
-                next_position = Position(head.position.x, head.position.y - 1)
-            case 1:
-                next_position = Position(head.position.x + 1, head.position.y)
-            case 2:
-                next_position = Position(head.position.x, head.position.y + 1)
-            case 3:
-                next_position = Position(head.position.x - 1, head.position.y)
+    def advance(self, time_delta, food, other_snake):
+        self.time_delta += time_delta
+        if self.time_delta >= SNAKE_SPEED:
+            self.time_delta = self.time_delta - SNAKE_SPEED
 
-        if next_position.x < 0 or next_position.x > GRID_WIDTH  - 1 or next_position.y < 0 or next_position.y > GRID_HEIGHT - 1:
-            return False
-        
-        for i in other_snake.fields:
-            if next_position == i.position:
+            # get direction of head and determine its next position
+            head = self.fields[0]
+            match head.direction:
+                case 0:
+                    next_position = Position(head.position.x, head.position.y - 1)
+                case 1:
+                    next_position = Position(head.position.x + 1, head.position.y)
+                case 2:
+                    next_position = Position(head.position.x, head.position.y + 1)
+                case 3:
+                    next_position = Position(head.position.x - 1, head.position.y)
+
+            if next_position.x < 0 or next_position.x > GRID_WIDTH  - 1 or next_position.y < 0 or next_position.y > GRID_HEIGHT - 1:
                 return False
-        
-        for i in self.fields:
-            if next_position == i.position:
-                return False
+            
+            for i in other_snake.fields:
+                if next_position == i.position:
+                    return False
+            
+            for i in self.fields:
+                if next_position == i.position:
+                    return False
 
-        if not (next_position == food.position):
-            self.fields.pop(len(self.fields) - 1)
-        else:
-            food.calculate_randam_position()
+            if not (next_position == food.position):
+                self.fields.pop(len(self.fields) - 1)
+            else:
+                food.calculate_randam_position()
 
-        self.fields.insert(0, BodyPart(next_position, head.direction))
+            self.fields.insert(0, BodyPart(next_position, head.direction))
 
     def draw(self, window):
+
+        # iterate through all body parts
         for i in range(len(self.fields)):
             current_bodypart = self.fields[i]
             if i == 0:
+                # draw head
                 match self.fields[0].direction:
                     case 0:
                         rotated_head = pygame.transform.rotate(self.surface_head, 270)
@@ -118,6 +139,7 @@ class Snake:
                 window.blit(rotated_head, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
 
             elif i == len(self.fields) - 1:
+                # draw tail
                 match current_bodypart.direction:
                     case 0:
                         rotated_body = pygame.transform.rotate(self.surface_tail, 270)
@@ -131,6 +153,7 @@ class Snake:
                 
 
             else:
+                # draw body (straight and curved)
                 current_direction = current_bodypart.direction
                 following_bodypart = self.fields[i + 1]
                 follwoing_direction = following_bodypart.direction
@@ -173,8 +196,8 @@ class Snake:
                 window.blit(rotated_body, (current_bodypart.position.x * TILE_SIZE, current_bodypart.position.y * TILE_SIZE))
 
     def change_direction(self, direction):
-        #print(self.fields[0].direction)
-        # if direction == 0
+
+        # prevent illegal movements
         if direction == 2 and self.fields[0].direction == 0:
             return
         elif direction == 3 and self.fields[0].direction == 1:
@@ -183,9 +206,13 @@ class Snake:
             return
         elif direction == 1 and self.fields[0].direction == 3:
             return
-
+        
         self.fields[0].direction = direction
 
+
+def message(window, message, color):
+    message = pygame.font.SysFont(None, 50).render(message, True, color)
+    window.blit(message, [WINDOW_HEIGHT / 6, WINDOW_HEIGHT / 3])
 
 
 # Initialize Pygame
@@ -201,102 +228,111 @@ window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 background = pygame.image.load('./background.png')
 window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
-# Create a game loop
-running = True
+player_1 = Snake(True)
+player_2 = Snake(False)
+food = Food()
+game_winner_1 = False
 
 # speed of the snake
 clock = pygame.time.Clock()
-snake_speed = 2
+time_delta = 0
 
-# font. after we use grafik, just delete here
-font_style = pygame.font.SysFont(None, 50)
-score_font = pygame.font.SysFont("comicasansms", 35)
 
-def score_counter(score_1, score_2):
-    value_1 = score_font.render("Score of player 1: " + str(score_1), True, white)
-    value_2 = score_font.render("Score of player 2: " + str(score_2), True, white)
-    window.blit(value_1, [0,0])
-    window.blit(value_2, [WINDOW_WIDTH - 600, 0])
+game_state = 0
 
-# def jedge_winner(score_1, score_2):
-#     font = pygame.font.Font(None, 36)
-#     text_1 = font.render("Win player 1", True, red)
-#     text_2 = font.render("Win player 2", True, red)
-#     text_3 = font.render("Draw", True, red)
-#     if score_1 > score_2:
-#         window.blit(text_1, [window_width / 2, window_height - 50])
-#     elif score_2 > score_1:
-#         window.blit(text_2, [window_width / 2, window_height - 50])
-#     else:
-#         window.blit(text_3, [window_width / 2, window_height - 50])
+def game_init():
+    global game_state
 
-def message(message, color):
-    message = font_style.render(message, True, color)
-    window.blit(message, [WINDOW_HEIGHT / 6, WINDOW_HEIGHT / 3])
+    for event in pygame.event.get():
+        match event.type:
+            case pygame.QUIT:
+                game_state = 3
+            case pygame.KEYDOWN:
+                game_state = 1
 
-def gameRunning():
-    game_over = False
-    game_close = False
+    window.blit(window_with_background, (0, 0))
+    message(window, "SNAKEGAME", (255, 255, 255, 255))
 
-    player_1 = Snake(True)
-    player_2 = Snake(False)
-    food = Food()
+def game_running():
+    global game_state
+    global player_1
+    global player_2
+    global food
+    global window
+    global game_winner_1
 
-    while not game_over:
-        while game_close == True:
-            if game_winner_1:
-                message("Player 1 won the game! Press Q-Quit or C-Play Again", white)
-            else:
-                message("Player 2 won the game! Press Q-Quit or C-Play Again", white)
-            # score_counter(len(player_1.fields), len(player_2.fields))
-            
-            # jedge_winner(Length_of_snake1 - 1, Length_of_snake2 - 1)
-            pygame.display.update()
-            
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        game_over = True
-                        game_close = False
-                    if event.key == pygame.K_c:
-                        gameRunning()
+    # check input and change state accordingly
+    for event in pygame.event.get():
+        match event.type:
+            case pygame.QUIT:
+                game_state = 3
+            case pygame.KEYDOWN:
+                match event.key:
+                    case pygame.K_UP:
+                        player_1.change_direction(0)
+                    case pygame.K_RIGHT:
+                        player_1.change_direction(1)
+                    case pygame.K_DOWN:
+                        player_1.change_direction(2)
+                    case pygame.K_LEFT:
+                        player_1.change_direction(3)
+                    case pygame.K_w:
+                        player_2.change_direction(0)
+                    case pygame.K_d:
+                        player_2.change_direction(1)
+                    case pygame.K_s:
+                        player_2.change_direction(2)
+                    case pygame.K_a:
+                        player_2.change_direction(3)
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                player_1.change_direction(0)
-            if keys[pygame.K_RIGHT]:
-                player_1.change_direction(1)
-            if keys[pygame.K_DOWN]:
-                player_1.change_direction(2)
-            if keys[pygame.K_LEFT]:
-                player_1.change_direction(3)
+    # advance snakes
+    if player_1.advance(time_delta, food, player_2) == False:
+        game_winner_1 = False
+        game_state = 2
+    if player_2.advance(time_delta, food, player_1) == False:
+        game_winner_1 = True
+        game_state = 2
+    
+    # draw frame
+    window.blit(window_with_background, (0, 0))
+    food.draw(window)
+    player_1.draw(window)
+    player_2.draw(window)
 
-            if keys[pygame.K_a]:
-                player_2.change_direction(3)
-            if keys[pygame.K_d]:
-                player_2.change_direction(1)
-            if keys[pygame.K_w]:
-                player_2.change_direction(0)
-            if keys[pygame.K_s]:
-                player_2.change_direction(2)
+    
 
-        window.blit(window_with_background, (0, 0))
-        food.draw(window)
-        score_counter(len(player_1.fields), len(player_2.fields))
-        if player_1.advance(food, player_2) == False:
-            game_close = True
-            game_winner_1 = False
-        player_1.draw(window)
-        if player_2.advance(food, player_1) == False:
-            game_close = True
-            game_winner_1 = True
-        player_2.draw(window)
-        pygame.display.update()
-        clock.tick(snake_speed)
+def game_over():
+    global game_state
 
-    pygame.quit()
+    # check input and change state accordingly
+    for event in pygame.event.get():
+        match event.type:
+            case pygame.QUIT:
+                game_state = 3
+            case pygame.KEYDOWN:
+                match event.key:
+                    case pygame.K_q:
+                        game_state = 3
+                    case pygame.K_c:
+                        game_state = 1  
+    
+    # draw frame
+    if game_winner_1:
+        message(window, "Player 1 won the game! Press Q-Quit or C-Play Again", white)
+    else:
+        message(window, "Player 2 won the game! Press Q-Quit or C-Play Again", white)       
 
-gameRunning()
+
+# game loop
+while game_state != 3:
+    match game_state:
+        case 0:
+            game_init()
+        case 1:
+            game_running()
+        case 2:
+            game_over()
+    pygame.display.update()
+    time_delta = clock.tick(143)
+
+pygame.quit()
