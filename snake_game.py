@@ -278,7 +278,8 @@ def game_init():
             case pygame.QUIT:
                 game_state = 3
             case pygame.KEYDOWN:
-                game_state = 1
+                if event.key == pygame.K_SPACE:
+                    game_state = 1
 
     window.blit(window_with_background, (0, 0))
     y_pos = WINDOW_HEIGHT / 2 - title_surface.get_height() / 2
