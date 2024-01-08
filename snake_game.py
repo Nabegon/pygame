@@ -19,6 +19,9 @@ WINDOW_WIDTH = GRID_WIDTH * TILE_SIZE
 WINDOW_HEIGHT = GRID_HEIGHT * TILE_SIZE
 
 SNAKE_SPEED = 350
+INCREASED_SNAKE_SPEED = 150
+SPEED_UP_PERIOD = 3000
+SPEED_UP_COOLDOWN = 10000
 
 CHANGE_ANIMATION_POINT = 250
 class Position:
@@ -106,12 +109,34 @@ class Snake:
             self.surface_curve = pygame.image.load('./p2_curve.png')
             self.surface_tail = pygame.image.load('./p2_tail.png')
         
+        # used in advance(); tracks time since the snake moved
         self.time_delta = 0
+
+        # tracks the status of the speedup ability
+        self.speed_up = 0
+
+    def speed_up_activate(self):
+        if self.speed_up <= 0 - SPEED_UP_COOLDOWN:
+            self.speed_up = SPEED_UP_PERIOD
     
     def advance(self, time_delta, food, other_snake):
+
         self.time_delta += time_delta
-        if self.time_delta >= SNAKE_SPEED:
-            self.time_delta = self.time_delta - SNAKE_SPEED
+
+        if self.speed_up > 0:
+            # speed up active
+            speed = INCREASED_SNAKE_SPEED
+            self.speed_up = self.speed_up - time_delta
+        elif self.speed_up < 0 - SPEED_UP_COOLDOWN:
+            # speedup available but inactive
+            speed = SNAKE_SPEED
+        else:
+            # speedup cooldown
+            speed = SNAKE_SPEED
+            self.speed_up = self.speed_up - time_delta
+
+        if self.time_delta >= speed:
+            self.time_delta = self.time_delta - speed
 
             # get direction of head and determine its next position
             self.fields[0].direction = self.direction
@@ -278,8 +303,7 @@ def game_init():
             case pygame.QUIT:
                 game_state = 3
             case pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    game_state = 1
+                game_state = 1
 
     window.blit(window_with_background, (0, 0))
     y_pos = WINDOW_HEIGHT / 2 - title_surface.get_height() / 2
@@ -308,6 +332,8 @@ def game_running():
                         player_1.change_direction(2)
                     case pygame.K_LEFT:
                         player_1.change_direction(3)
+                    case pygame.K_RSHIFT:
+                        player_1.speed_up_activate()
                     case pygame.K_w:
                         player_2.change_direction(0)
                     case pygame.K_d:
@@ -316,6 +342,8 @@ def game_running():
                         player_2.change_direction(2)
                     case pygame.K_a:
                         player_2.change_direction(3)
+                    case pygame.K_e:
+                        player_2.speed_up_activate()
 
     # advance snakes
     if player_1.advance(time_delta, food, player_2) == False:
