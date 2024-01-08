@@ -294,6 +294,8 @@ time_delta = 0
 
 
 game_state = 0
+pygame.mixer.music.load('./bgmusic.mp3')
+pygame.mixer.music.play()
 
 def game_init():
     global game_state
@@ -402,4 +404,5 @@ while game_state != 3:
     pygame.display.update()
     time_delta = clock.tick(143)
 
+pygame.mixer.music.stop()
 pygame.quit()
