@@ -310,6 +310,8 @@ obstacle_surface = pygame.image.load('./obstacle.png')
 # Set the window size etc.
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
+# put it under the window, because we use it after opening the window
+pygame.display.toggle_fullscreen()
 
 obstacles = []
 place_obstacles(obstacles)
