@@ -23,6 +23,8 @@ INCREASED_SNAKE_SPEED = 150
 SPEED_UP_PERIOD = 3000
 SPEED_UP_COOLDOWN = 10000
 
+OBSTACLE_AMOUNT = 10
+
 CHANGE_ANIMATION_POINT = 250
 class Position:
     def __init__(self, x, y):
@@ -66,6 +68,9 @@ class Food:
             case 3:
                 surface_food = self.surface_1      
         window.blit(surface_food, (self.position.x * TILE_SIZE, self.position.y * TILE_SIZE))
+
+# class Obstacle:
+#     def __init__(self, position):
     
 class BodyPart:
     def __init__(self, position, direction):
@@ -119,7 +124,7 @@ class Snake:
         if self.speed_up <= 0 - SPEED_UP_COOLDOWN:
             self.speed_up = SPEED_UP_PERIOD
     
-    def advance(self, time_delta, food, other_snake):
+    def advance(self, time_delta, food, obstacle_list, other_snake):
 
         self.time_delta += time_delta
 
@@ -160,6 +165,10 @@ class Snake:
             
             for i in self.fields:
                 if next_position == i.position:
+                    return False
+
+            for o in obstacle_list:
+                if next_position == o:
                     return False
 
             if not (next_position == food.position):
@@ -259,6 +268,24 @@ class Snake:
         self.direction = direction
 
 
+def place_obstacles(obstacle_list):
+    obstacle_list.clear()
+    for i in range(OBSTACLE_AMOUNT):
+        uniqe = False
+        while uniqe == False:
+            position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+            uniqe = True
+            for p in obstacle_list:
+                if p == position:
+                    uniqe = False
+        obstacle_list.append(position)
+
+
+def draw_obstacles(obstacle_list, obstacle_surface):
+    for o in obstacle_list:
+        window.blit(obstacle_surface, (o.x * TILE_SIZE, o.y * TILE_SIZE))
+
+
 def message(window, message, color):
     message = pygame.font.SysFont(None, 50).render(message, True, color)
     x_pos = WINDOW_WIDTH / 2 - game_over_surface.get_width() / 2 
@@ -278,10 +305,14 @@ pygame.display.set_caption("Snake Game")
 background = pygame.image.load('./background.png')
 game_over_surface = pygame.image.load('./gameover.png')
 title_surface = pygame.image.load('./title.png')
+obstacle_surface = pygame.image.load('./obstacle.png')
 
 # Set the window size etc.
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
+
+obstacles = []
+place_obstacles(obstacles)
 
 player_1 = Snake(True)
 player_2 = Snake(False)
@@ -348,10 +379,10 @@ def game_running():
                         player_2.speed_up_activate()
 
     # advance snakes
-    if player_1.advance(time_delta, food, player_2) == False:
+    if player_1.advance(time_delta, food, obstacles, player_2) == False:
         game_winner_1 = False
         game_state = 2
-    if player_2.advance(time_delta, food, player_1) == False:
+    if player_2.advance(time_delta, food, obstacles, player_1) == False:
         game_winner_1 = True
         game_state = 2
     food.advance(time_delta)
@@ -360,6 +391,7 @@ def game_running():
     food.draw(window)
     player_1.draw(window)
     player_2.draw(window)
+    draw_obstacles(obstacles, obstacle_surface)
 
 def game_over():
     global game_state
@@ -380,6 +412,7 @@ def game_over():
                         player_1 = Snake(True)
                         player_2 = Snake(False)
                         food = Food()
+                        place_obstacles(obstacles)
                         game_state = 1
     
     # draw frame
