@@ -310,8 +310,6 @@ obstacle_surface = pygame.image.load('./obstacle.png')
 # Set the window size etc.
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
-# put it under the window, because we use it after opening the window
-pygame.display.toggle_fullscreen()
 
 obstacles = []
 place_obstacles(obstacles)
@@ -338,7 +336,10 @@ def game_init():
             case pygame.QUIT:
                 game_state = 3
             case pygame.KEYDOWN:
-                game_state = 1
+                if event.key == pygame.K_q:
+                    game_state = 3
+                else:
+                    game_state = 1
 
     window.blit(window_with_background, (0, 0))
     y_pos = WINDOW_HEIGHT / 2 - title_surface.get_height() / 2
@@ -359,6 +360,8 @@ def game_running():
                 game_state = 3
             case pygame.KEYDOWN:
                 match event.key:
+                    case pygame.K_q:
+                            game_state = 3
                     case pygame.K_UP:
                         player_1.change_direction(0)
                     case pygame.K_RIGHT:
@@ -441,3 +444,6 @@ while game_state != 3:
 
 pygame.mixer.music.stop()
 pygame.quit()
+
+# Shutdown Raspberry Pi
+# os.system("sudo shutdown -h now")
