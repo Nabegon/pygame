@@ -26,6 +26,7 @@ SPEED_UP_COOLDOWN = 10000
 OBSTACLE_AMOUNT = 10
 
 CHANGE_ANIMATION_POINT = 250
+
 class Position:
     def __init__(self, x, y):
         self.x = x
@@ -36,17 +37,42 @@ class Position:
             return True
         return False
 
+
+class Playground:
+    def __init__(self):
+        self.grid = []
+        for i in range(GRID_HEIGHT):
+            self.grid.append([])
+            for j in range(GRID_WIDTH):
+                self.grid[i].append(False)
+
+    def is_occupied(self, position):
+        return self.grid[position.y][position.x]
+    
+    def set_field(self, position):
+        self.grid[position.y][position.x] = True
+
+    def reset_field(self, position):
+        self.grid[position.y][position.x] = False
+
+
 class Food:
     def __init__(self):
-        self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+        global playground
+
+        # randomly place the food
+        random_position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+        while playground.is_occupied(random_position):
+            random_position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+        playground.set_field(random_position)
+        self.position = random_position
+
         self.surface_0 = pygame.image.load('./battery_0.png')
         self.surface_1 = pygame.image.load('./battery_1.png')
         self.surface_2 = pygame.image.load('./battery_2.png')
         self.animation_step = 0 # 0 - 3
         self.time_delta = 0
-    
-    def calculate_randam_position(self):
-        self.position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+
 
     def advance(self, time_delta):
         self.time_delta += time_delta
@@ -69,8 +95,6 @@ class Food:
                 surface_food = self.surface_1      
         window.blit(surface_food, (self.position.x * TILE_SIZE, self.position.y * TILE_SIZE))
 
-# class Obstacle:
-#     def __init__(self, position):
     
 class BodyPart:
     def __init__(self, position, direction):
@@ -80,28 +104,45 @@ class BodyPart:
 
 class Snake:
     def __init__(self, alternative_color):
-        self.direction = random.randrange(4)
-        start_x = random.randrange(3, GRID_WIDTH - 3)
-        start_y = random.randrange(3, GRID_HEIGHT - 3)
-        initial_position = Position(start_x, start_y)
+        global playground
 
+        collision = True
 
-        # set the fields of the snake with their positions
-        self.fields = [BodyPart(initial_position, self.direction)]
-        match self.direction:
-            case 0:
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 1), self.direction))
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 2), self.direction))
-            case 1:
-                self.fields.append(BodyPart(Position(initial_position.x - 1, initial_position.y), self.direction))
-                self.fields.append(BodyPart(Position(initial_position.x - 2, initial_position.y), self.direction))
-            case 2:
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 1), self.direction))
-                self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 2), self.direction))
-            case 3:
-                self.fields.append(BodyPart(Position(initial_position.x + 1, initial_position.y), self.direction))
-                self.fields.append(BodyPart(Position(initial_position.x + 2, initial_position.y), self.direction))
+        while collision:
+            collision = False
+
+            self.direction = random.randrange(4)
+            start_x = random.randrange(3, GRID_WIDTH - 3)
+            start_y = random.randrange(3, GRID_HEIGHT - 3)
+            initial_position = Position(start_x, start_y)
+
+            # set the fields of the snake with their positions
+            self.fields = [BodyPart(initial_position, self.direction)]
+            match self.direction:
+                case 0:
+                    self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 1), self.direction))
+                    self.fields.append(BodyPart(Position(initial_position.x, initial_position.y + 2), self.direction))
+                case 1:
+                    self.fields.append(BodyPart(Position(initial_position.x - 1, initial_position.y), self.direction))
+                    self.fields.append(BodyPart(Position(initial_position.x - 2, initial_position.y), self.direction))
+                case 2:
+                    self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 1), self.direction))
+                    self.fields.append(BodyPart(Position(initial_position.x, initial_position.y - 2), self.direction))
+                case 3:
+                    self.fields.append(BodyPart(Position(initial_position.x + 1, initial_position.y), self.direction))
+                    self.fields.append(BodyPart(Position(initial_position.x + 2, initial_position.y), self.direction))
         
+        # check if snake overlaps
+        for bodypart in self.fields:
+            if playground.is_occupied(bodypart.position):
+                self.fields.clear()
+                collision = True
+
+        # mark the location of the snake on the playground
+        if collision == False:
+            for bodypart in self.fields:
+                playground.set_field(bodypart.position)
+
         # load graphics
         if alternative_color:
             self.surface_head = pygame.image.load('./p1_head.png')
@@ -120,11 +161,15 @@ class Snake:
         # tracks the status of the speedup ability
         self.speed_up = 0
 
+
+
     def speed_up_activate(self):
         if self.speed_up <= 0 - SPEED_UP_COOLDOWN:
             self.speed_up = SPEED_UP_PERIOD
     
-    def advance(self, time_delta, food, obstacle_list, other_snake):
+    def advance(self, time_delta):
+        global playground
+        global food
 
         self.time_delta += time_delta
 
@@ -158,25 +203,19 @@ class Snake:
 
             if next_position.x < 0 or next_position.x > GRID_WIDTH  - 1 or next_position.y < 0 or next_position.y > GRID_HEIGHT - 1:
                 return False
-            
-            for i in other_snake.fields:
-                if next_position == i.position:
-                    return False
-            
-            for i in self.fields:
-                if next_position == i.position:
-                    return False
 
-            for o in obstacle_list:
-                if next_position == o:
+            if playground.is_occupied(next_position):
+                if next_position == food.position:
+                    food = Food()
+                else:
                     return False
-
-            if not (next_position == food.position):
-                self.fields.pop(len(self.fields) - 1)
             else:
-                food.calculate_randam_position()
+                playground.reset_field(self.fields[len(self.fields) - 1].position)
+                self.fields.pop(len(self.fields) - 1)
 
+            playground.set_field(next_position)
             self.fields.insert(0, BodyPart(next_position, head.direction))
+
 
     def draw(self, window):
 
@@ -268,19 +307,6 @@ class Snake:
         self.direction = direction
 
 
-def place_obstacles(obstacle_list):
-    obstacle_list.clear()
-    for i in range(OBSTACLE_AMOUNT):
-        uniqe = False
-        while uniqe == False:
-            position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
-            uniqe = True
-            for p in obstacle_list:
-                if p == position:
-                    uniqe = False
-        obstacle_list.append(position)
-
-
 def draw_obstacles(obstacle_list, obstacle_surface):
     for o in obstacle_list:
         window.blit(obstacle_surface, (o.x * TILE_SIZE, o.y * TILE_SIZE))
@@ -291,6 +317,33 @@ def message(window, message, color):
     x_pos = WINDOW_WIDTH / 2 - game_over_surface.get_width() / 2 
     y_pos = WINDOW_HEIGHT / 2 - game_over_surface.get_height() / 2
     window.blit(message, (x_pos, y_pos))
+
+
+def start_game():
+    global game_state
+    global playground
+    global player_1
+    global player_2
+    global food
+    global obstacles
+    global window
+    global game_winner_1
+
+    playground = Playground()
+    player_1 = Snake(True)
+    player_2 = Snake(False)
+
+    # place obstacles
+    obstacles.clear()
+    for i in range(OBSTACLE_AMOUNT):
+        random_position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+        while playground.is_occupied(random_position):
+            random_position = Position(random.randrange(GRID_WIDTH), random.randrange(GRID_HEIGHT))
+        playground.set_field(random_position)
+        obstacles.append(random_position)
+
+    food = Food()
+    game_state = 1
 
 
 # Initialize Pygame
@@ -311,8 +364,9 @@ obstacle_surface = pygame.image.load('./obstacle.png')
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 window_with_background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
 
+playground = Playground()
+
 obstacles = []
-place_obstacles(obstacles)
 
 player_1 = Snake(True)
 player_2 = Snake(False)
@@ -339,7 +393,7 @@ def game_init():
                 if event.key == pygame.K_q:
                     game_state = 3
                 else:
-                    game_state = 1
+                    start_game()
 
     window.blit(window_with_background, (0, 0))
     y_pos = WINDOW_HEIGHT / 2 - title_surface.get_height() / 2
@@ -384,13 +438,14 @@ def game_running():
                         player_2.speed_up_activate()
 
     # advance snakes
-    if player_1.advance(time_delta, food, obstacles, player_2) == False:
+    if player_1.advance(time_delta) == False:
         game_winner_1 = False
         game_state = 2
-    if player_2.advance(time_delta, food, obstacles, player_1) == False:
+    if player_2.advance(time_delta) == False:
         game_winner_1 = True
         game_state = 2
     food.advance(time_delta)
+
     # draw frame
     window.blit(window_with_background, (0, 0))
     food.draw(window)
@@ -414,11 +469,7 @@ def game_over():
                     case pygame.K_q:
                         game_state = 3
                     case pygame.K_c:
-                        player_1 = Snake(True)
-                        player_2 = Snake(False)
-                        food = Food()
-                        place_obstacles(obstacles)
-                        game_state = 1
+                        start_game()
     
     # draw frame
     x_pos = WINDOW_WIDTH / 2 - game_over_surface.get_width() / 2 
